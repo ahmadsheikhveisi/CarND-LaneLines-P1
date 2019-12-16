@@ -1,3 +1,4 @@
+
 # **Finding Lane Lines on the Road** 
 
 ## Writeup Report
@@ -133,3 +134,9 @@ Moreover, the drawn lines on the videos are a bit flickery and unsteady perhaps 
 A possible improvement would be to add memory to the function which processes the video frames. this would help in the situations like the challenge video where the image of the road is too noisy to detect any lane lines. with this technique, i suppose we can focuse on the region where the lane lines had been detected before and ignore the noise and other changes on the road.
 
 Another potential improvement could be to eliminate the line segements which are too far away from the others. this eliminates the noise in the lane line detection (which causes the lane lines to be unsteady) due to the small paint stains on the road which have the same oriantation and color as the lane lines.
+
+
+
+```python
+
+```
