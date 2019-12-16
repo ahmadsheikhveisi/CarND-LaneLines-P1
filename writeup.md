@@ -78,8 +78,6 @@ To direct the focus to where lane lines are more likely are located, this stage 
 
 ![alt text][image5]
 
-![alt text][image6]
-
 #### 6. Probabilistic Hough Transform
 
 Edges points from the Canny edge detection are fed into the Probabilistic Hough transform stage. the Hough transform converts each point in the image into a sin curve and each line in the image into a point in the Hough plane.
