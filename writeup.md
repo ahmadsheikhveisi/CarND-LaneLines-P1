@@ -41,9 +41,33 @@ The Canny edge detection method basically performs the gradient over the gray-sc
 
 To focus to where lane lines are more likely are located, this stage masks the image with a quadrilateral. the quadrilateral's height and top and bottom edges length and position are the parameters here, and they should be expressed with respect to the image size. these are chosen to get the most of the lane lines visible in the images. 
 
-#### 6. Hough Transform
+#### 6. Probabilistic Hough Transform
 
-In order to draw a single line on the left and right lanes, I modified the draw_lines() function by ...
+Edges points from the Canny edge detection are fed into the Probabilistic Hough transform stage. the Hough transform converts each point in the image into a sin curve and each line in the image into a point in the Hough plane.
+
+
+$$
+(x_0,y_0) => x_0cos(\theta)+y_0sin(\theta)=\rho
+$$
+$$
+xcos(\theta_0)+ysin(\theta_0) = \rho_0 => (\rho_0,\theta_0)
+$$
+
+with this transform, if the adjacent points form a line, the sin curves in the hough space cross one point. if the random samples of the edge are chosen to detect the line, the transform is probabilistic. this technique reduce the time and processing power. The parameters for Hough transform are 
+- \rho_0: \rho unit in the hough space, low value causes the line detection to be more sensetive, and with a high value, the line would be lost, i found out 2 is good value 
+- \theta_0: \theta unit in the hough space, similar to the \rho_0, i chose the minimum value for this parameter, which is one gradian
+- threshold: number of the votes for the line. the value of 15 was chosen. higher value will cause more accuracy but loss of data.
+- minimun line length: how long the the line should be to be consider as a line. i chose 10. 
+- maximum gap in the line: maximum gap in a line. i chose 20. a higher value allows the algorithm to fill the gaps and results in longer lines but less accuracy since it is possible that the algorithm finds a line where there is none.
+
+**Modifying the draw_line function**
+
+In order to draw a single line on the left and right lanes, I modified the draw_lines() function by first, determining each line belongs to which side. this is done by calculating the slope of each line and comparing its endpoints to the middle line. for example, lines with the negative slope (wrt to the origin at the top left) can belong to left lane if the x of both endpoints are less than the x of the middle. also, to add more constraints, i consider a minimum slope for the lines, meaning if the line segments are too horizental they are not part of the lane lines. this is a fare assumption since lane lines are almost vertical. some line segments are rejected at this stage, meaning they have the wrong slope or they are on the wrong side of the image.
+after this stage, since all the endpoints of the lines which fit the condition of the lane lines are determined, a great line can be fit to all the lines since all of them have to be on one giant line. I used linear least-square regression method implemented by scipy. this function gets all the endpoints as the input and returns the slope(m), intercept (b), and the error of the regression. 
+using the estimated m and b now we can draw the detected lane lines on the image. the endpoints of lane lines are needed to draw them on the image. since the y of the bottom and top of the region of interest are known, we can calculate the x like this:
+$$
+x_{top/bottom} = (y_{top/bottom} - b_{est})/m_{est}
+$$
 
 If you'd like to include images to show how the pipeline works, here is how to include an image: 
 
@@ -64,4 +88,4 @@ Moreover, the drawn lines on the videos are a bit flickery and unsteady.
 
 A possible improvement would be to add memory to the function which processes the video frames. this would help in the situations like the challenge video where the image of the road is too noisy to detect any lane lines. with this technique, i suppose we can focuse on the region where the lane lines had been detected before and ignore the noise and other changes on the road.
 
-Another potential improvement could be to ...
+Another potential improvement could be to eliminate the line segements which are too far away from the others. this eliminates the noise in the lane line detection due to the small paint stains on the road which have the same oriantation and color as the lane lines.
